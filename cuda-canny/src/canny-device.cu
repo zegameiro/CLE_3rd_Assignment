@@ -16,13 +16,14 @@ __global__ void convolutionKernel(
     if (m >= khalf && m < nx - khalf && n >= khalf && n < ny - khalf)
     {
         float pixel = 0.0f;
-        int c = 0;
 
         for (int j = -khalf; j <= khalf; j++)
         {
             for (int i = -khalf; i <=khalf; i++)
             {
-                pixel += in[(n + j) * nx + m - i] * kernel[c++];
+                int idx = (n - j) * nx + (m - i);
+                int kid = (j + khalf) * kn + (i + khalf);
+                pixel += in[idx] * kernel[kid];
             }
         }
 
@@ -41,17 +42,17 @@ __global__ void nonMaximumSuppressionKernel(
 
     if (i >= 1 && i < nx - 1 && j >= 1 && j < ny - 1)
     {
-        const int c = i + nx * j;
+        int c = i + nx * j;
         const int nn = c - nx;
         const int ss = c + nx;
         const int ww = c + 1;
         const int ee = c - 1;
-        const int nw = c - nx + 1;
-        const int ne = c - nx - 1;
-        const int sw = c + nx + 1;
-        const int se = c + nx - 1;
+        const int nw = nn + 1;
+        const int ne = nn - 1;
+        const int sw = ss + 1;
+        const int se = ss - 1;
 
-        const float dir = (fmodf(atan2f((float)after_Gy[c], (float)after_Gx[c]) + M_PI, M_PI) / M_PI) * 8;
+        const float dir = (float)(fmodf(atan2f((float)after_Gy[c], (float)after_Gx[c]) + M_PI, M_PI) / M_PI) * 8;
 
         if (((dir <= 1 || dir > 7) && G[c] > G[ee] && G[c] > G[ww]) || // 0 deg
             ((dir > 1 && dir <= 3) && G[c] > G[nw] && G[c] > G[se]) || // 45 deg
@@ -81,6 +82,10 @@ __global__ void firstEdgesKernel(
         if (nms[c] >= tmax)
         {
             reference[c] = 255;
+        } 
+        else
+        {
+            reference[c] = 0;
         }
     }
 }
@@ -112,7 +117,7 @@ __global__ void hysteresisKernel(
         {
             for (int k = 0; k < 8; k++)
             {
-                if (nms[nbs[k]] >= tmin)
+                if (reference[nbs[k]] >= tmin)
                 {
                     reference[t] = 255;
                     *changed = true;
