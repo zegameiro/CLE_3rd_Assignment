@@ -4,10 +4,3 @@
 *.ptx
 *.cubin
 *.fatbin
-
-# Ignore image and build files from banana/d479
-banana/d479/images/
-banana/d479/cuda-canny/images
-banana/d479/build/
-banana/d479/*.pgm
-banana/d479/canny
