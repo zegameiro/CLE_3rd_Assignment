@@ -4,6 +4,25 @@ This assignment consists in the implementation of a solution for the Canny Edge 
 
 ---
 
+## Table of Contents
+
+1. [File Structure](#file-structure)
+2. [Implementation Details](#implementation-details)
+    - [Gaussian Kernel Generation (`gaussianKernel`)](#gaussian-kernel-gneration-gaussiankernel)
+    - [Convolution (`convolutionKernel`)](#convolution-convolutionkernel)
+    - [Normalization (`normalizeKernel`)](#normalization-normalizekernel)
+    - [Min/Max Reduction (`minMaxKernel` and `cudaMinMax`)](#minmax-reduction-minmaxkernel-and-cudaminmax)
+    - [Gradient Calculation (`convolutionKernel` with Sobel and `mergeGradientsKernel`)](#gradient-calculation-convolutionkernel-with-soberl-and-mergegradientskernel)
+    - [Non-Maximum Suppression (`nonMaximumSuppressionKernel`)](#non-maximum-suppression-nonmaximumsuppressionkernel)
+    - [First Edges (`firstEdgesKernel`)](#first-edges-firstedgeskernel)
+    - [Hysteresis (`hysteresisKernel`)](#hysteresis-hysteresiskernel)
+3. [Workflow](#workflow)
+4. [Compilation and Execution](#compilation-and-execution)
+    - [Command-Line Arguments](#command-line-arguments)
+    - [Example Usage](#example-usage)
+
+---
+
 ## File Structure
 
 | File | Purpose |
