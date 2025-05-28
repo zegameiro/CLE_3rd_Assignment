@@ -69,6 +69,34 @@ Connects pixels with weak edges to strong ones, so that important edges are not 
 - Each thread checks if its pixel is a weak edge and if any of its 8 neighbors is a strong edge.
 - If this happens, it promotes itself to a strong edge and sets a flag (`changed`) to indicate that another iteration is needed.
 
+## Workflow
 
+The CUDA-based Canny Edge Detection follows these steps:
 
+- **1. Image transfer to GPU**
+    - The input grayscale image is copied from host (CPU) memory to the device (GPU) memory.
 
+- **2. Gaussian Smoothing**
+    - A 2D Gaussian kernel is generated and normalized on the GPU.
+    - The image is convolved with the Gaussian kernel using the `convolutionKernel` to reduce noise.
+    - The result is normalized using `normalizeKernel`.
+
+- **3. Gradient Calculation**
+    - The smoothed image is convolved with Sobel kernels (horizontal and vertical) to compute the gradients Gx and Gy.
+    - The gradient magnitude is computed using `mergeGradientsKernel`.
+    - The gradient magnitude is also normalized using `normalizeKernel`.
+
+- **4. Non-Maximum Suppression**
+    - The `nonMaximumSuppressionKernel` examines each pixel and its neighbors along the gradient direction.
+    - Only pixels that are considered local maxima or strong edges are retained, while others are set to zero.
+
+- **5. Double Thresholding (First Edges)**
+    - The `firstEdgesKernel` marks pixels with gradient magnitude above the high threshold as strong edges.
+
+- **6. Edge Tracking by Hysteresis**
+    - The `hysteresisKernel` iteratively checks for weak edge pixels (above the low threshold) that are connected to strong edges.
+    - If a weak edge is connected to a strong one, then it is promoted to a strong edge.
+    - This process continues until no more changes occur, ensuring that only meaningful connected edges remain.
+
+- **7. Result Transfer to Host**
+    - The final edge map is copied from device memory back to host memory to be saved.
