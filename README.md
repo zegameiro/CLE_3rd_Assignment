@@ -2,6 +2,8 @@
 
 This assignment consists in the implementation of a solution for the Canny Edge Detection algorithm using CUDA. This algorithm detects edges in  grayscale images using a multi-stage process.
 
+---
+
 ## File Structure
 
 | File | Purpose |
@@ -9,6 +11,8 @@ This assignment consists in the implementation of a solution for the Canny Edge 
 | `canny.cu` | Contains the main program logic, command-line parsing, timing measurements, and the reference CPU implementation |
 | `image.c` | Contains some functions to load and save `.ppm` images  |
 | `canny-device.cu` | Implements all CUDA kernels and the main GPU function that manages the GPU-based edge detection |
+
+---
 
 ## Implementation Details
 
@@ -69,6 +73,8 @@ Connects pixels with weak edges to strong ones, so that important edges are not 
 - Each thread checks if its pixel is a weak edge and if any of its 8 neighbors is a strong edge.
 - If this happens, it promotes itself to a strong edge and sets a flag (`changed`) to indicate that another iteration is needed.
 
+---
+
 ## Workflow
 
 The CUDA-based Canny Edge Detection follows these steps:
@@ -100,3 +106,63 @@ The CUDA-based Canny Edge Detection follows these steps:
 
 - **7. Result Transfer to Host**
     - The final edge map is copied from device memory back to host memory to be saved.
+
+---
+
+## Compilation and Execution
+
+To compile the program and then execute it, use the following steps:
+
+1. Navigate to the directory containing the `Makefile` file:
+
+```bash
+cd cuda-canny
+```
+
+2. Compile the program with the following command:
+
+```bash
+make
+```
+
+3. Run the program with the following command:
+
+```bash
+./canny
+```
+4. Two files will be generated: `out.pgm` (the CUDA result) and `reference.pgm` (the CPU reference result). And the following output will be printed to the terminal:
+
+```bash 
+Available devices
+->0: NVIDIA GeForce RTX 3050 Laptop GPU (compute 8.6)
+
+gaussian_filter: kernel size 7, sigma=1
+Host processing time: 31.373312 (ms)
+Device processing time: 2.427424 (ms)
+
+Number of different pixels: 0/262144 (0.00%)
+```
+
+
+### Command-Line Arguments
+
+It is possible to execute the program with some arguments
+
+| Argument | Description |
+| :---: | :---: |
+| `-d <device>` | Select CUDA device (default: 0) |
+| `-i <inputFile>` | Input image filename (default [lake.pgm](./cuda-canny/images/lake.pgm)) |
+| `-o <outputFile>` | Output image filename for the CUDA result (default: `out.pgm`) |
+| `-r <referenceFile>` | Output image filename for the CPU result (default: `referecen.pgm`) |
+| `-n <tmin>` | Minimum threshold for hysteresis (default: 45) |
+| `-x <tmax>` | Maximum threshold for hysteresis (default: 50) |
+| `-s <sigma>` | Sigma value for Gaussian smoothing (default: 1.0) |
+| `-h` | Show help message and exit |
+
+#### Example Usage
+
+```bash
+./canny -i images/house.pgm -o house_out.pgm -r house_reference.pgm -n 35 -x 45 -s 1.0
+```
+
+> This will process the [house.pgm](./cuda-canny/images/house.pgm) with sigma = 1.0, tmin = 35, and tmax = 45, saving the CUDA result to `house_out.pgm` and the CPU reference result to `house_reference.pgm`.
