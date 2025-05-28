@@ -185,3 +185,10 @@ It is possible to execute the program with some arguments
 ```
 
 > This will process the [house.pgm](./cuda-canny/images/house.pgm) with sigma = 1.0, tmin = 35, and tmax = 45, saving the CUDA result to `house_out.pgm` and the CPU reference result to `house_reference.pgm`.
+
+---
+
+## Authors
+
+- [Daniel Madureira](https://github.com/Dan1m4D)
+- [José Gameiro](https://github.com/zegameiro)
