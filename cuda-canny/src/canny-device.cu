@@ -5,8 +5,7 @@ typedef int pixel_t;
 
 __global__ void convolutionKernel(
     const pixel_t *in, pixel_t *out, const float *kernel,
-    const int nx, const int ny, const int kn
-)
+    const int nx, const int ny, const int kn)
 {
     int m = blockIdx.x * blockDim.x + threadIdx.x;
     int n = blockIdx.y * blockDim.y + threadIdx.y;
@@ -19,7 +18,7 @@ __global__ void convolutionKernel(
 
         for (int j = -khalf; j <= khalf; j++)
         {
-            for (int i = -khalf; i <=khalf; i++)
+            for (int i = -khalf; i <= khalf; i++)
             {
                 int idx = (n - j) * nx + (m - i);
                 int kid = (j + khalf) * kn + (i + khalf);
@@ -34,8 +33,7 @@ __global__ void convolutionKernel(
 __global__ void nonMaximumSuppressionKernel(
     const pixel_t *after_Gx, pixel_t *after_Gy,
     const pixel_t *G, pixel_t *nms,
-    const int nx, const int ny
-)
+    const int nx, const int ny)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
@@ -70,8 +68,7 @@ __global__ void nonMaximumSuppressionKernel(
 
 __global__ void firstEdgesKernel(
     const pixel_t *nms, pixel_t *reference,
-    const int nx, const int ny, const int tmax
-)
+    const int nx, const int ny, const int tmax)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
@@ -82,7 +79,7 @@ __global__ void firstEdgesKernel(
         if (nms[c] >= tmax)
         {
             reference[c] = 255;
-        } 
+        }
         else
         {
             reference[c] = 0;
@@ -91,10 +88,9 @@ __global__ void firstEdgesKernel(
 }
 
 __global__ void hysteresisKernel(
-    const pixel_t* nms, pixel_t* reference,
+    const pixel_t *nms, pixel_t *reference,
     const int nx, const int ny,
-    const int tmin, bool *changed
-)
+    const int tmin, bool *changed)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
@@ -104,10 +100,10 @@ __global__ void hysteresisKernel(
         int t = i + j * nx;
 
         int nbs[8];
-        nbs[0] = t - nx; // nn
-        nbs[1] = t + nx; // ss
-        nbs[2] = t + 1; // ww
-        nbs[3] = t - 1; // ee
+        nbs[0] = t - nx;     // nn
+        nbs[1] = t + nx;     // ss
+        nbs[2] = t + 1;      // ww
+        nbs[3] = t - 1;      // ee
         nbs[4] = nbs[0] + 1; // nw
         nbs[5] = nbs[0] - 1; // ne
         nbs[6] = nbs[1] + 1; // sw
@@ -128,8 +124,7 @@ __global__ void hysteresisKernel(
 }
 
 __global__ void gaussianKernel(
-    float *kernel, const int n, const float sigma
-)
+    float *kernel, const int n, const float sigma)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;
@@ -139,14 +134,13 @@ __global__ void gaussianKernel(
         const float mean = (float)floor(n / 2.0);
         int c = i + n * j;
         kernel[c] = expf(-0.5f * (powf((i - mean) / sigma, 2.0f) + powf((j - mean) / sigma, 2.0f))) /
-                   (2 * M_PI * sigma * sigma);
+                    (2 * M_PI * sigma * sigma);
     }
 }
 
 __global__ void minMaxKernel(
     const pixel_t *data, pixel_t *min_vals, pixel_t *max_vals,
-    const int nx, const int ny
-)
+    const int nx, const int ny)
 {
     extern __shared__ pixel_t sdata[];
     pixel_t *s_min = sdata;
@@ -174,8 +168,10 @@ __global__ void minMaxKernel(
     {
         if (tid < s && i + s < nx * ny)
         {
-            if (s_min[tid + s] < s_min[tid]) s_min[tid] = s_min[tid + s];
-            if (s_max[tid + s] > s_max[tid]) s_max[tid] = s_max[tid + s];
+            if (s_min[tid + s] < s_min[tid])
+                s_min[tid] = s_min[tid + s];
+            if (s_max[tid + s] > s_max[tid])
+                s_max[tid] = s_max[tid + s];
         }
         __syncthreads();
     }
@@ -190,8 +186,7 @@ __global__ void minMaxKernel(
 
 __global__ void normalizeKernel(
     pixel_t *data, const int nx, const int ny,
-    const int kn, const pixel_t min_val, const pixel_t max_val
-)
+    const int kn, const pixel_t min_val, const pixel_t max_val)
 {
     int m = blockIdx.x * blockDim.x + threadIdx.x;
     int n = blockIdx.y * blockDim.y + threadIdx.y;
@@ -208,8 +203,7 @@ __global__ void normalizeKernel(
 
 __global__ void mergeGradientsKernel(
     pixel_t *G, const pixel_t *Gx, const pixel_t *Gy,
-    const int nx, const int ny
-)
+    const int nx, const int ny)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -227,8 +221,7 @@ __global__ void mergeGradientsKernel(
 
 void cudaMinMax(
     const pixel_t *d_data, const int nx, const int ny,
-    pixel_t *min_val, pixel_t *max_val
-)
+    pixel_t *min_val, pixel_t *max_val)
 {
     int num_elements = nx * ny;
     int block_size = 256;
@@ -240,12 +233,11 @@ void cudaMinMax(
     cudaSafeCall(cudaMalloc(&d_min_vals, num_blocks * sizeof(pixel_t)));
     cudaSafeCall(cudaMalloc(&d_max_vals, num_blocks * sizeof(pixel_t)));
 
-    h_min_vals = (pixel_t*)malloc(num_blocks * sizeof(pixel_t));
-    h_max_vals = (pixel_t*)malloc(num_blocks * sizeof(pixel_t));
+    h_min_vals = (pixel_t *)malloc(num_blocks * sizeof(pixel_t));
+    h_max_vals = (pixel_t *)malloc(num_blocks * sizeof(pixel_t));
 
     minMaxKernel<<<num_blocks, block_size, 2 * block_size * sizeof(pixel_t)>>>(
-        d_data, d_min_vals, d_max_vals, nx, ny
-    );
+        d_data, d_min_vals, d_max_vals, nx, ny);
 
     cudaSafeCall(cudaMemcpy(h_min_vals, d_min_vals, num_blocks * sizeof(pixel_t), cudaMemcpyDeviceToHost));
     cudaSafeCall(cudaMemcpy(h_max_vals, d_max_vals, num_blocks * sizeof(pixel_t), cudaMemcpyDeviceToHost));
@@ -255,8 +247,10 @@ void cudaMinMax(
 
     for (int i = 1; i < num_blocks; i++)
     {
-        if (h_min_vals[i] < *min_val) *min_val = h_min_vals[i];
-        if (h_max_vals[i] > *max_val) *max_val = h_max_vals[i];
+        if (h_min_vals[i] < *min_val)
+            *min_val = h_min_vals[i];
+        if (h_max_vals[i] > *max_val)
+            *max_val = h_max_vals[i];
     }
 
     cudaFree(d_min_vals);
@@ -266,10 +260,10 @@ void cudaMinMax(
 }
 
 // canny edge detector code to run on the GPU
-void cannyDevice( const int *h_idata, const int w, const int h,
+void cannyDevice(const int *h_idata, const int w, const int h,
                  const int tmin, const int tmax,
                  const float sigma,
-                 int * h_odata)
+                 int *h_odata)
 {
     const int nx = w;
     const int ny = h;
@@ -319,14 +313,12 @@ void cannyDevice( const int *h_idata, const int w, const int h,
     float h_Gx[9] = {
         -1, 0, 1,
         -2, 0, 2,
-        -1, 0, 1
-    };
+        -1, 0, 1};
 
     float h_Gy[9] = {
         1, 2, 1,
         0, 0, 0,
-        -1, -2, -1
-    };
+        -1, -2, -1};
 
     cudaSafeCall(cudaMalloc(&d_Gx, 9 * sizeof(float)));
     cudaSafeCall(cudaMalloc(&d_Gy, 9 * sizeof(float)));
@@ -361,7 +353,7 @@ void cannyDevice( const int *h_idata, const int w, const int h,
     bool h_changed;
     cudaSafeCall(cudaMalloc(&d_changed, sizeof(bool)));
 
-    do 
+    do
     {
         h_changed = false;
         cudaSafeCall(cudaMemcpy(d_changed, &h_changed, sizeof(bool), cudaMemcpyHostToDevice));
@@ -370,8 +362,7 @@ void cannyDevice( const int *h_idata, const int w, const int h,
         cudaCheckMsg("Hysteresis failed");
 
         cudaSafeCall(cudaMemcpy(&h_changed, d_changed, sizeof(bool), cudaMemcpyDeviceToHost));
-    }
-    while (h_changed);
+    } while (h_changed);
 
     // Copy result to host
     cudaSafeCall(cudaMemcpy(h_odata, d_reference, size, cudaMemcpyDeviceToHost));

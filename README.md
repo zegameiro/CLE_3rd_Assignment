@@ -6,20 +6,24 @@ This assignment consists in the implementation of a solution for the Canny Edge 
 
 ## Table of Contents
 
-1. [File Structure](#file-structure)
-2. [Implementation Details](#implementation-details)
-    - [Gaussian Kernel Generation (`gaussianKernel`)](#gaussian-kernel-gneration-gaussiankernel)
+- [Third Assignment for the Large-Scale Computation 2024/2025](#third-assignment-for-the-large-scale-computation-20242025)
+  - [Table of Contents](#table-of-contents)
+  - [File Structure](#file-structure)
+  - [Implementation Details](#implementation-details)
+    - [Gaussian Kernel Gneration (`gaussianKernel`)](#gaussian-kernel-gneration-gaussiankernel)
     - [Convolution (`convolutionKernel`)](#convolution-convolutionkernel)
     - [Normalization (`normalizeKernel`)](#normalization-normalizekernel)
     - [Min/Max Reduction (`minMaxKernel` and `cudaMinMax`)](#minmax-reduction-minmaxkernel-and-cudaminmax)
-    - [Gradient Calculation (`convolutionKernel` with Sobel and `mergeGradientsKernel`)](#gradient-calculation-convolutionkernel-with-soberl-and-mergegradientskernel)
+    - [Gradient Calculation (`convolutionKernel` with Soberl and `mergeGradientsKernel`)](#gradient-calculation-convolutionkernel-with-soberl-and-mergegradientskernel)
     - [Non-Maximum Suppression (`nonMaximumSuppressionKernel`)](#non-maximum-suppression-nonmaximumsuppressionkernel)
     - [First Edges (`firstEdgesKernel`)](#first-edges-firstedgeskernel)
     - [Hysteresis (`hysteresisKernel`)](#hysteresis-hysteresiskernel)
-3. [Workflow](#workflow)
-4. [Compilation and Execution](#compilation-and-execution)
+  - [Workflow](#workflow)
+  - [Testing](#testing)
+  - [Compilation and Execution](#compilation-and-execution)
     - [Command-Line Arguments](#command-line-arguments)
-    - [Example Usage](#example-usage)
+      - [Example Usage](#example-usage)
+  - [Authors](#authors)
 
 ---
 
@@ -127,6 +131,15 @@ The CUDA-based Canny Edge Detection follows these steps:
     - The final edge map is copied from device memory back to host memory to be saved.
 
 ---
+
+## Testing
+To test the CUDA Canny Edge Detection implementation, a set of grayscale images is provided in the `images` directory. The program compares the results of the CUDA implementation with a CPU reference implementation (`canny.cu`)  to ensure correctness.
+
+```
+real    6m19,923s
+user    0m20,361s
+sys     4m58,936s
+```
 
 ## Compilation and Execution
 
