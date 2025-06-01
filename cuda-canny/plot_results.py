@@ -559,8 +559,8 @@ def generate_summary_stats(df, output_dir):
             "Max Speedup": f"{df['Speedup'].max():.2f}x",
             "Min Speedup": f"{df['Speedup'].min():.2f}x",
             "Std Speedup": f"{df['Speedup'].std():.2f}x",
-            "Mean Host Time": f"{df['Host_Time_us'].mean():.0f} μs",
-            "Mean Device Time": f"{df['Device_Time_us'].mean():.0f} μs",
+            "Mean Host Time": f"{df['Host_Time_us'].mean():.2f} μs",
+            "Mean Device Time": f"{df['Device_Time_us'].mean():.2f} μs",
         }
     }
 

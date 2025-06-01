@@ -4,14 +4,13 @@
 mkdir -p results
 
 # CSV header
-echo "Image,Width,Height,Sigma,Tmin,Tmax,Host_Time_us,Device_Time_us,Speedup" > results/performance_results.csv
+echo "Image,Width,Height,Sigma,Tmin,Tmax,Host_Time_ms,Device_Time_ms,Speedup" > results/performance_results.csv
 
 # Test parameters
-SIGMAS="0.5 1.0 1.5 2.0 2.5"
-TMINS="30 50 70"
-TMAXS="80 100 120"
+SIGMAS="0.5 0.75 1.0 1.25 1.5 1.75 2.0 2.25 2.5"
+TMINS="20 30 40 50 60 70"
+TMAXS="80 90 100 110 120 130"
 IMAGES="./images/*.pgm"  # Adjust path as needed
-ITERATIONS=10
 
 echo "Starting performance tests..."
 

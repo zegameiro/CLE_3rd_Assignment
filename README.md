@@ -19,10 +19,15 @@ This assignment consists in the implementation of a solution for the Canny Edge 
     - [First Edges (`firstEdgesKernel`)](#first-edges-firstedgeskernel)
     - [Hysteresis (`hysteresisKernel`)](#hysteresis-hysteresiskernel)
   - [Workflow](#workflow)
-  - [Testing](#testing)
+  - [Testing - Enhanced Performance Analysis](#testing---enhanced-performance-analysis)
+    - [Performance Summary](#performance-summary)
+    - [Key Conclusions from Performance Analysis:](#key-conclusions-from-performance-analysis)
+    - [Optimal Parameter Values](#optimal-parameter-values)
+    - [Impact of Shared Memory Optimization](#impact-of-shared-memory-optimization)
   - [Compilation and Execution](#compilation-and-execution)
     - [Command-Line Arguments](#command-line-arguments)
       - [Example Usage](#example-usage)
+    - [Run the tests](#run-the-tests)
   - [Authors](#authors)
 
 ---
@@ -132,14 +137,84 @@ The CUDA-based Canny Edge Detection follows these steps:
 
 ---
 
-## Testing
-To test the CUDA Canny Edge Detection implementation, a set of grayscale images is provided in the `images` directory. The program compares the results of the CUDA implementation with a CPU reference implementation (`canny.cu`)  to ensure correctness.
+## Testing - Enhanced Performance Analysis
 
-```
-real    6m19,923s
-user    0m20,361s
-sys     4m58,936s
-```
+To properly evaluate the CUDA Canny Edge Detection implementation, comprehensive performance measurements were conducted across varying images and algorithmic parameters. The testing methodology involved comparing the CUDA implementation's results with a CPU reference (`canny.cu`), focusing on correctness and performance metrics. Key measurements included processing time for both GPU and CPU implementations, as well as the difference in pixel output between the CUDA result and the CPU reference. Additionally, the algorithm's parameters, such as sigma and hysteresis thresholds, were varied to assess their impact on performance under diverse conditions.
+
+The detailed results are visually presented in the following plots:
+
+![cuda-canny/results](./cuda-canny/results/plots/parameter_analysis.png)
+![cuda-canny/results](./cuda-canny/results/plots/parameter_heatmaps.png)
+![cuda-canny/results](./cuda-canny/results/plots/timing_by_image.png)
+
+### Performance Summary
+
+**Overall Statistics:**
+- **Total Tests:** 2592
+- **Mean Speedup:** 21.91x
+- **Max Speedup:** 27.60x
+- **Min Speedup:** 14.31x
+- **Std Speedup:** 1.69x
+- **Mean Host Time:** 31.67 ms
+- **Mean Device Time:** 1.44 ms
+
+The system demonstrates a substantial performance improvement, achieving an average speedup of 21.91x when utilizing the device compared to the host. The significantly lower mean device time (1.44 ms) compared to the mean host time (31.67 ms) underscores the efficiency of the device in reducing execution time.
+
+**Best Configuration:**
+- **Image:** `jetplane.pgm`
+- **Sigma:** 1.0
+- **Tmin:** 50
+- **Tmax:** 130
+- **Speedup:** 27.60x
+
+**Worst Configuration:**
+- **Image:** `livingroom.pgm`
+- **Sigma:** 2.5
+- **Tmin:** 60
+- **Tmax:** 100
+- **Speedup:** 14.31x
+
+### Key Conclusions from Performance Analysis:
+
+* **Significant Speedup Achieved:** The implementation consistently provides substantial speedup, with a mean speedup of 21.91x and a peak of 27.60x. This highlights the effectiveness of CUDA for Canny Edge Detection.
+* **Minimal Device Execution Time:** The device consistently completes operations in approximately 1.44 ms, demonstrating its high efficiency across various test conditions.
+* **Parameter Impact on Speedup:**
+    * Individual variations in `Sigma`, `Tmin`, and `Tmax` within the tested ranges do not drastically alter the absolute host or device execution times, which remain consistently high for the host and low for the device.
+    * While raw times show minor changes, the normalized execution times indicate subtle influences of these parameters on the relative performance or workload distribution between host and device.
+    * The heatmaps for "Speedup by Parameter Combinations" clearly illustrate that specific combinations of `Sigma`, `Tmin`, and `Tmax` yield higher speedup values, indicating an interplay between these parameters for optimal performance.
+* **Image Characteristics are Crucial for Speedup:**
+    * The type of input image significantly influences the achieved speedup.
+    * The `jetplane.pgm` image, characterized by distinct features and potentially simpler background elements, yielded the highest speedup (27.60x). This suggests that images with strong, well-defined edges or patterns are highly favorable for the device's processing capabilities.
+    * Conversely, the `livingroom.pgm` image resulted in the lowest speedup (14.31x). This could be attributed to its more complex and varied textures, numerous small details, or less distinct prominent edges, which may be less efficiently handled by the device's architecture.
+    * The "Average Speedup by Image" chart confirms this variability, with other images like `mandril`, `lake`, `pirate`, `house`, `peppers`, and `walkbridge` showing intermediate speedup values.
+* **Importance of Image Selection and Parameter Tuning:** The disparity between the best and worst configurations emphasizes the critical role of both the input image's characteristics and the tuning of `Sigma`, `Tmin`, and `Tmax` in achieving optimal performance with the CUDA Canny Edge Detection implementation.
+
+### Optimal Parameter Values
+
+Based on the comprehensive testing, the following parameter values were identified as contributing to the highest observed speedup for the CUDA Canny Edge Detection implementation:
+
+* **Best Performing Single Configuration:**
+    * **Sigma: 1.0**
+    * **Tmin: 50**
+    * **Tmax: 130**
+    * These values, in combination with the `jetplane.pgm` image, resulted in the maximum speedup of 27.60x.
+
+* **Average Best Performing Ranges:**
+    While a single "best" configuration yielded the absolute maximum speedup, analysis of the parameter heatmaps and individual speedup plots reveals broader ranges of parameters that consistently deliver high performance:
+    * **Sigma:** Values between **1.0 and 2.0** consistently show strong speedup.
+    * **Tmin:** Values ranging from **50 to 80** generally contribute to high speedup.
+    * **Tmax:** Values between **120 and 140** tend to result in excellent speedup when combined with appropriate `Tmin` and `Sigma` values.
+
+The heatmaps visually confirm that these specific ranges, when used together, create a synergistic effect that optimizes performance. For instance, the red (highest speedup) regions in the heatmaps frequently align with `Sigma` values around 1.0-2.0, `Tmin` values around 50-80, and `Tmax` values around 120-140. This indicates that these settings enable the CUDA kernels to process image data most efficiently, maximizing the benefits of GPU acceleration across a range of conditions.
+
+### Impact of Shared Memory Optimization
+
+Further analysis of the CUDA Canny Edge Detection implementation reveals the significant performance benefits gained from utilizing shared memory. By comparing execution times with and without this optimization, a clear improvement in device processing speed is observed.
+
+* **Without Shared Memory:** When the CUDA Canny Edge Detection algorithm runs without shared memory optimization, the device processing time is approximately 113.115715 ms.
+* **With Shared Memory:** Upon implementing shared memory, the device processing time drastically reduces to approximately 2.251744 ms.
+
+This dramatic reduction in device processing time (from ~113 ms to ~2.25 ms) clearly demonstrates the effectiveness of shared memory optimization. Shared memory allows for faster data access by leveraging on-chip memory, thereby minimizing the need to access slower global memory and significantly enhancing the CUDA kernel's performance. The host processing time remains relatively consistent (around 44.02 ms without shared memory and 42.99 ms with shared memory), as expected, since shared memory optimization primarily impacts device-side operations. The number of different pixels between the CUDA and CPU reference results remains 0/262144 (0.00%) in both cases, confirming the correctness of the implementation regardless of shared memory usage.
 
 ## Compilation and Execution
 
@@ -200,6 +275,21 @@ It is possible to execute the program with some arguments
 > This will process the [house.pgm](./cuda-canny/images/house.pgm) with sigma = 1.0, tmin = 35, and tmax = 45, saving the CUDA result to `house_out.pgm` and the CPU reference result to `house_reference.pgm`.
 
 ---
+
+### Run the tests
+To run the tests, you can use the provided make target, which will execute the test script `performance_tests.sh`. To do this, run the following command:
+
+```bash
+make test
+```
+This will take some time, as it will run the Canny Edge Detection algorithm on multiple images with different parameters and save the results in the `results` directory.
+
+To clean up the generated files after running the tests, you can use the following command:
+
+```bash
+make clean
+```
+which will remove the `out.pgm`, `reference.pgm`, and the `results` directory.
 
 ## Authors
 

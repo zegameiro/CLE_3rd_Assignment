@@ -1,26 +1,26 @@
 Overall Statistics:
 ----------------------------------------
-Total Tests: 360
-Mean Speedup: 21.93x
-Max Speedup: 30.43x
-Min Speedup: 19.48x
-Std Speedup: 1.68x
-Mean Host Time: 32 μs
-Mean Device Time: 1 μs
+Total Tests: 2592
+Mean Speedup: 21.91x
+Max Speedup: 27.60x
+Min Speedup: 14.31x
+Std Speedup: 1.69x
+Mean Host Time: 31.67 μs
+Mean Device Time: 1.44 μs
 
 Best Configuration:
 ----------------------------------------
-Image: pirate.pgm
-Sigma: 0.5
+Image: jetplane.pgm
+Sigma: 1.0
 Tmin: 50
-Tmax: 100
-Speedup: 30.43x
+Tmax: 130
+Speedup: 27.60x
 
 Worst Configuration:
 ----------------------------------------
-Image: pirate.pgm
-Sigma: 1.0
-Tmin: 30
-Tmax: 120
-Speedup: 19.48x
+Image: livingroom.pgm
+Sigma: 2.5
+Tmin: 60
+Tmax: 100
+Speedup: 14.31x
 
