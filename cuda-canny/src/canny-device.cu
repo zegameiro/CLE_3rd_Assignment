@@ -328,6 +328,7 @@ void cudaMinMax(
     const pixel_t *d_data, const int nx, const int ny,
     pixel_t *min_val, pixel_t *max_val)
 {
+    printf("Using shared memory approach for min/max calculation.\n");
     int num_elements = nx * ny;
     int block_size = 256;
     int num_blocks = (num_elements + block_size - 1) / block_size;
@@ -376,6 +377,7 @@ void cudaMinMax_noShared(
     const pixel_t *d_data, const int nx, const int ny,
     pixel_t *min_val, pixel_t *max_val)
 {
+    printf("Using no shared memory approach for min/max calculation.\n");
     int num_elements = nx * ny;
     int block_size = 256;
     int num_blocks = (num_elements + block_size - 1) / block_size;

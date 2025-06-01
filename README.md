@@ -7,28 +7,29 @@ This assignment consists in the implementation of a solution for the Canny Edge 
 ## Table of Contents
 
 - [Third Assignment for the Large-Scale Computation 2024/2025](#third-assignment-for-the-large-scale-computation-20242025)
-  - [Table of Contents](#table-of-contents)
-  - [File Structure](#file-structure)
-  - [Implementation Details](#implementation-details)
-    - [Gaussian Kernel Gneration (`gaussianKernel`)](#gaussian-kernel-gneration-gaussiankernel)
-    - [Convolution (`convolutionKernel`)](#convolution-convolutionkernel)
-    - [Normalization (`normalizeKernel`)](#normalization-normalizekernel)
-    - [Min/Max Reduction (`minMaxKernel` and `cudaMinMax`)](#minmax-reduction-minmaxkernel-and-cudaminmax)
-    - [Gradient Calculation (`convolutionKernel` with Soberl and `mergeGradientsKernel`)](#gradient-calculation-convolutionkernel-with-soberl-and-mergegradientskernel)
-    - [Non-Maximum Suppression (`nonMaximumSuppressionKernel`)](#non-maximum-suppression-nonmaximumsuppressionkernel)
-    - [First Edges (`firstEdgesKernel`)](#first-edges-firstedgeskernel)
-    - [Hysteresis (`hysteresisKernel`)](#hysteresis-hysteresiskernel)
-  - [Workflow](#workflow)
-  - [Testing - Enhanced Performance Analysis](#testing---enhanced-performance-analysis)
-    - [Performance Summary](#performance-summary)
-    - [Key Conclusions from Performance Analysis:](#key-conclusions-from-performance-analysis)
-    - [Optimal Parameter Values](#optimal-parameter-values)
-    - [Impact of Shared Memory Optimization](#impact-of-shared-memory-optimization)
-  - [Compilation and Execution](#compilation-and-execution)
-    - [Command-Line Arguments](#command-line-arguments)
-      - [Example Usage](#example-usage)
-    - [Run the tests](#run-the-tests)
-  - [Authors](#authors)
+    - [Table of Contents](#table-of-contents)
+    - [File Structure](#file-structure)
+    - [Implementation Details](#implementation-details)
+        - [Gaussian Kernel Generation (`gaussianKernel`)](#gaussian-kernel-gneration-gaussiankernel)
+        - [Convolution (`convolutionKernel`)](#convolution-convolutionkernel)
+        - [Normalization (`normalizeKernel`)](#normalization-normalizekernel)
+        - [Min/Max Reduction using Shared Memory (`minMaxKernel` and `cudaMinMax`)](#minmax-reduction-using-shared-memory-minmaxkernel-and-cudaminmax)
+        - [Min/Max Reduction using Global Memory (`minMaxKernel_no_shared` and `cudaMinMax_noShared`)](#minmax-reduction-using-global-memory-minmaxkernel_no_shared-and-cudaminmax_noshared)
+        - [Gradient Calculation (`convolutionKernel` with Sobel and `mergeGradientsKernel`)](#gradient-calculation-convolutionkernel-with-soberl-and-mergegradientskernel)
+        - [Non-Maximum Suppression (`nonMaximumSuppressionKernel`)](#non-maximum-suppression-nonmaximumsuppressionkernel)
+        - [First Edges (`firstEdgesKernel`)](#first-edges-firstedgeskernel)
+        - [Hysteresis (`hysteresisKernel`)](#hysteresis-hysteresiskernel)
+    - [Workflow](#workflow)
+    - [Testing - Enhanced Performance Analysis](#testing---enhanced-performance-analysis)
+        - [Performance Summary](#performance-summary)
+        - [Key Conclusions from Performance Analysis](#key-conclusions-from-performance-analysis)
+        - [Optimal Parameter Values](#optimal-parameter-values)
+        - [Impact of Shared Memory Optimization](#impact-of-shared-memory-optimization)
+    - [Compilation and Execution](#compilation-and-execution)
+        - [Command-Line Arguments](#command-line-arguments)
+        - [Example Usage](#example-usage)
+        - [Run the tests](#run-the-tests)
+    - [Authors](#authors)
 
 ---
 
@@ -64,7 +65,7 @@ Scales pixel values to the **[0, 255]** range after filtering or gradient calcul
 - Each thread normalizes one pixel, using **min/max values** found by `cudaMinMax`.
 - Only valid pixels, meaning that borders are excluded, are normalized.
 
-### Min/Max Reduction (`minMaxKernel` and `cudaMinMax`)
+### Min/Max Reduction using Shared Memory (`minMaxKernel` and `cudaMinMax`)
 
 Finds the minimum and maximum pixel values in an image for normalization.
 
@@ -73,6 +74,16 @@ Finds the minimum and maximum pixel values in an image for normalization.
 . The first thread in each block uses `atomicMin` and `atomicMax` to update global arrays, ensuring correctness when multiple blocks write results.
 - In this kernel, using **shared memory** is much faster than **global memory**, because it avoids performing all reductions in global memory, meaning that it allows efficient reduction across blocks.
 - **Atomics** are necessary to avoid race conditions when multiple blocks write their min/max to global memory. This ensures that the final min and max values are correct, even with many blocks running in parallel.
+
+### Min/Max Reduction using Global Memory (`minMaxKernel_no_shared` and `cudaMinMax_noShared`)
+
+Finds the minimum and maximum pixel values in an image for normalization, but using only global memory.
+
+- Each thread reads a single pixel from the image and directly attempts to update the global minimum and maximum values in the device memory using `atomicMin` and `atomicMax`.
+
+- All threads operate independently and perform atomic operations on the same global variables.
+
+- **No shared memory** is used, so there is no intra-block cooperation or reduction; all reduction is performed globally with atomics.
 
 ### Gradient Calculation (`convolutionKernel` with Soberl and `mergeGradientsKernel`)
 
@@ -209,12 +220,28 @@ The heatmaps visually confirm that these specific ranges, when used together, cr
 
 ### Impact of Shared Memory Optimization
 
-Further analysis of the CUDA Canny Edge Detection implementation reveals the significant performance benefits gained from utilizing shared memory. By comparing execution times with and without this optimization, a clear improvement in device processing speed is observed.
+We decided to evaluate the impact of shared memory utilization in the detection of the minimum and maximum pixel values in an image. For this we executed our solution with the default parameters, but for all the available images, alternating between the shared memory and global memory implementations of the `cudaMinMax` function. The results are as follows:
 
-* **Without Shared Memory:** When the CUDA Canny Edge Detection algorithm runs without shared memory optimization, the device processing time is approximately 113.115715 ms.
-* **With Shared Memory:** Upon implementing shared memory, the device processing time drastically reduces to approximately 2.251744 ms.
+| Image          | Device Time (ms) | Host Time (ms) | Different Pixels | Shared Memory |
+| :------------: | :-------------: | :------------: | :--------------: | :-------------: |
+| `house.pgm` | 2.3304 | 36.4083 | 0/262144 (0.00%) | ✔️ |
+| `house.pgm`  | 2.5176| 37.9924 | 0/262144 (0.00%) | ❌ |
+| `jetplane.pgm` | 2.2858 | 42.1376| 0/262144 (0.00%) | ✔️ |
+| `jetplane.pgm`  | 2.4538 | 43.8364 | 0/262144 (0.00%) | ❌ |
+| `lake.pgm` | 2.4104 | 44.8205 | 0/262144 (0.00%) | ✔️ |
+| `lake.pgm`  | 2.4319 | 41.6696 | 0/262144 (0.00%) | ❌ |
+| `livingroom.pgm` | 2.2589 | 38.4666 | 0/262144 (0.00%) | ✔️ |
+| `livingroom.pgm`  | 2.4047 | 41.7956 | 0/262144 (0.00%) | ❌ |
+| `mandril.pgm` | 2.1313 | 44.3914 | 0/262144 (0.00%) | ✔️ |
+| `mandril.pgm`  | 2.5094 | 44.3136 | 0/262144 (0.00%) | ❌ |
+| `peppers_gray.pgm` | 2.9987 | 43.7002 | 0/262144 (0.00%) | ✔️ |
+| `peppers_gray.pgm` | 2.3057 | 41.6072 | 0/262144 (0.00%) | ❌ |
+| `pirate.pgm` | 2.2102 | 42.8472 | 0/262144 (0.00%) | ✔️ |
+| `pirate.pgm` | 2.3920 | 44.3238 | 0/262144 (0.00%) | ❌ |
+| `walkbridge.pgm` | 2.4345 | 48.5294 | 0/262144 (0.00%) | ✔️ |
+| `walkbridge.pgm` | 2.4094 | 49.2554 | 0/262144 (0.00%) | ❌ |
 
-This dramatic reduction in device processing time (from ~113 ms to ~2.25 ms) clearly demonstrates the effectiveness of shared memory optimization. Shared memory allows for faster data access by leveraging on-chip memory, thereby minimizing the need to access slower global memory and significantly enhancing the CUDA kernel's performance. The host processing time remains relatively consistent (around 44.02 ms without shared memory and 42.99 ms with shared memory), as expected, since shared memory optimization primarily impacts device-side operations. The number of different pixels between the CUDA and CPU reference results remains 0/262144 (0.00%) in both cases, confirming the correctness of the implementation regardless of shared memory usage.
+The results demonstrate that using the share memory approach for the `cudaMinMax` function provides a modest but measurable improvement in device execution time across most of the tested images, when compared to the global memory approach. This highlights that shared memory utilization, while it does not changes the overall runtime in this context, it can still provide performance benefits for maximizing CUDA kernel efficiency.
 
 ## Compilation and Execution
 
@@ -264,6 +291,7 @@ It is possible to execute the program with some arguments
 | `-n <tmin>` | Minimum threshold for hysteresis (default: 45) |
 | `-x <tmax>` | Maximum threshold for hysteresis (default: 50) |
 | `-s <sigma>` | Sigma value for Gaussian smoothing (default: 1.0) |
+| `-u` | Use the shared memory approach (default: False) |
 | `-h` | Show help message and exit |
 
 #### Example Usage
