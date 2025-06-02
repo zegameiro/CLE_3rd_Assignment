@@ -41,14 +41,14 @@ def plot_timing_by_image(df, output_dir):
 
     img_stats = (
         df.groupby("Image_Name")
-        .agg({"Host_Time_us": "mean", "Device_Time_us": "mean", "Speedup": "mean"})
+        .agg({"Host_Time_ms": "mean", "Device_Time_ms": "mean", "Speedup": "mean"})
         .reset_index()
     )
 
     # Host vs Device times (line plot)
     axes[0].plot(
         img_stats["Image_Name"],
-        img_stats["Host_Time_us"],
+        img_stats["Host_Time_ms"],
         marker="o",
         label="Host",
         color="#FF6B6B",
@@ -56,14 +56,14 @@ def plot_timing_by_image(df, output_dir):
     )
     axes[0].plot(
         img_stats["Image_Name"],
-        img_stats["Device_Time_us"],
+        img_stats["Device_Time_ms"],
         marker="o",
         label="Device",
         color="#4ECDC4",
         linewidth=2,
     )
     axes[0].set_xlabel("Images")
-    axes[0].set_ylabel("Average Time (μs)")
+    axes[0].set_ylabel("Average Time (ms)")
     axes[0].set_title("Average Execution Time by Image")
     axes[0].tick_params(axis="x", rotation=45)
     axes[0].legend()
@@ -87,11 +87,11 @@ def plot_timing_by_image(df, output_dir):
     axes[1].legend()
 
     # Normalized time comparison
-    host_norm = (img_stats["Host_Time_us"] - img_stats["Host_Time_us"].min()) / (
-        img_stats["Host_Time_us"].max() - img_stats["Host_Time_us"].min()
+    host_norm = (img_stats["Host_Time_ms"] - img_stats["Host_Time_ms"].min()) / (
+        img_stats["Host_Time_ms"].max() - img_stats["Host_Time_ms"].min()
     )
-    device_norm = (img_stats["Device_Time_us"] - img_stats["Device_Time_us"].min()) / (
-        img_stats["Device_Time_us"].max() - img_stats["Device_Time_us"].min()
+    device_norm = (img_stats["Device_Time_ms"] - img_stats["Device_Time_ms"].min()) / (
+        img_stats["Device_Time_ms"].max() - img_stats["Device_Time_ms"].min()
     )
     axes[2].plot(
         img_stats["Image_Name"],
@@ -127,26 +127,26 @@ def plot_parameter_analysis(df, output_dir):
     # --- Sigma ---
     sigma_stats = (
         df.groupby("Sigma")
-        .agg({"Host_Time_us": "mean", "Device_Time_us": "mean", "Speedup": "mean"})
+        .agg({"Host_Time_ms": "mean", "Device_Time_ms": "mean", "Speedup": "mean"})
         .reset_index()
     )
     # Time vs Sigma
     axes[0, 0].plot(
         sigma_stats["Sigma"],
-        sigma_stats["Host_Time_us"],
+        sigma_stats["Host_Time_ms"],
         marker="o",
         label="Host",
         color="#FF6B6B",
     )
     axes[0, 0].plot(
         sigma_stats["Sigma"],
-        sigma_stats["Device_Time_us"],
+        sigma_stats["Device_Time_ms"],
         marker="o",
         label="Device",
         color="#4ECDC4",
     )
     axes[0, 0].set_xlabel("Sigma")
-    axes[0, 0].set_ylabel("Avg Time (μs)")
+    axes[0, 0].set_ylabel("Avg Time (ms)")
     axes[0, 0].set_title("Execution Time vs Sigma")
     axes[0, 0].legend()
     axes[0, 0].grid(True, alpha=0.3)
@@ -164,12 +164,12 @@ def plot_parameter_analysis(df, output_dir):
     axes[1, 0].legend()
     axes[1, 0].grid(True, alpha=0.3)
     # Normalized time vs Sigma
-    host_norm = (sigma_stats["Host_Time_us"] - sigma_stats["Host_Time_us"].min()) / (
-        sigma_stats["Host_Time_us"].max() - sigma_stats["Host_Time_us"].min()
+    host_norm = (sigma_stats["Host_Time_ms"] - sigma_stats["Host_Time_ms"].min()) / (
+        sigma_stats["Host_Time_ms"].max() - sigma_stats["Host_Time_ms"].min()
     )
     device_norm = (
-        sigma_stats["Device_Time_us"] - sigma_stats["Device_Time_us"].min()
-    ) / (sigma_stats["Device_Time_us"].max() - sigma_stats["Device_Time_us"].min())
+        sigma_stats["Device_Time_ms"] - sigma_stats["Device_Time_ms"].min()
+    ) / (sigma_stats["Device_Time_ms"].max() - sigma_stats["Device_Time_ms"].min())
     axes[2, 0].plot(
         sigma_stats["Sigma"],
         host_norm,
@@ -193,26 +193,26 @@ def plot_parameter_analysis(df, output_dir):
     # --- Tmin ---
     tmin_stats = (
         df.groupby("Tmin")
-        .agg({"Host_Time_us": "mean", "Device_Time_us": "mean", "Speedup": "mean"})
+        .agg({"Host_Time_ms": "mean", "Device_Time_ms": "mean", "Speedup": "mean"})
         .reset_index()
     )
     # Time vs Tmin
     axes[0, 1].plot(
         tmin_stats["Tmin"],
-        tmin_stats["Host_Time_us"],
+        tmin_stats["Host_Time_ms"],
         marker="o",
         label="Host",
         color="#FF6B6B",
     )
     axes[0, 1].plot(
         tmin_stats["Tmin"],
-        tmin_stats["Device_Time_us"],
+        tmin_stats["Device_Time_ms"],
         marker="o",
         label="Device",
         color="#4ECDC4",
     )
     axes[0, 1].set_xlabel("Tmin")
-    axes[0, 1].set_ylabel("Avg Time (μs)")
+    axes[0, 1].set_ylabel("Avg Time (ms)")
     axes[0, 1].set_title("Execution Time vs Tmin")
     axes[0, 1].legend()
     axes[0, 1].grid(True, alpha=0.3)
@@ -230,12 +230,12 @@ def plot_parameter_analysis(df, output_dir):
     axes[1, 1].legend()
     axes[1, 1].grid(True, alpha=0.3)
     # Normalized time vs Tmin
-    host_norm = (tmin_stats["Host_Time_us"] - tmin_stats["Host_Time_us"].min()) / (
-        tmin_stats["Host_Time_us"].max() - tmin_stats["Host_Time_us"].min()
+    host_norm = (tmin_stats["Host_Time_ms"] - tmin_stats["Host_Time_ms"].min()) / (
+        tmin_stats["Host_Time_ms"].max() - tmin_stats["Host_Time_ms"].min()
     )
     device_norm = (
-        tmin_stats["Device_Time_us"] - tmin_stats["Device_Time_us"].min()
-    ) / (tmin_stats["Device_Time_us"].max() - tmin_stats["Device_Time_us"].min())
+        tmin_stats["Device_Time_ms"] - tmin_stats["Device_Time_ms"].min()
+    ) / (tmin_stats["Device_Time_ms"].max() - tmin_stats["Device_Time_ms"].min())
     axes[2, 1].plot(
         tmin_stats["Tmin"],
         host_norm,
@@ -259,26 +259,26 @@ def plot_parameter_analysis(df, output_dir):
     # --- Tmax ---
     tmax_stats = (
         df.groupby("Tmax")
-        .agg({"Host_Time_us": "mean", "Device_Time_us": "mean", "Speedup": "mean"})
+        .agg({"Host_Time_ms": "mean", "Device_Time_ms": "mean", "Speedup": "mean"})
         .reset_index()
     )
     # Time vs Tmax
     axes[0, 2].plot(
         tmax_stats["Tmax"],
-        tmax_stats["Host_Time_us"],
+        tmax_stats["Host_Time_ms"],
         marker="o",
         label="Host",
         color="#FF6B6B",
     )
     axes[0, 2].plot(
         tmax_stats["Tmax"],
-        tmax_stats["Device_Time_us"],
+        tmax_stats["Device_Time_ms"],
         marker="o",
         label="Device",
         color="#4ECDC4",
     )
     axes[0, 2].set_xlabel("Tmax")
-    axes[0, 2].set_ylabel("Avg Time (μs)")
+    axes[0, 2].set_ylabel("Avg Time (ms)")
     axes[0, 2].set_title("Execution Time vs Tmax")
     axes[0, 2].legend()
     axes[0, 2].grid(True, alpha=0.3)
@@ -296,12 +296,12 @@ def plot_parameter_analysis(df, output_dir):
     axes[1, 2].legend()
     axes[1, 2].grid(True, alpha=0.3)
     # Normalized time vs Tmax
-    host_norm = (tmax_stats["Host_Time_us"] - tmax_stats["Host_Time_us"].min()) / (
-        tmax_stats["Host_Time_us"].max() - tmax_stats["Host_Time_us"].min()
+    host_norm = (tmax_stats["Host_Time_ms"] - tmax_stats["Host_Time_ms"].min()) / (
+        tmax_stats["Host_Time_ms"].max() - tmax_stats["Host_Time_ms"].min()
     )
     device_norm = (
-        tmax_stats["Device_Time_us"] - tmax_stats["Device_Time_us"].min()
-    ) / (tmax_stats["Device_Time_us"].max() - tmax_stats["Device_Time_us"].min())
+        tmax_stats["Device_Time_ms"] - tmax_stats["Device_Time_ms"].min()
+    ) / (tmax_stats["Device_Time_ms"].max() - tmax_stats["Device_Time_ms"].min())
     axes[2, 2].plot(
         tmax_stats["Tmax"],
         host_norm,
@@ -326,26 +326,26 @@ def plot_parameter_analysis(df, output_dir):
     df["Threshold_Range"] = df["Tmax"] - df["Tmin"]
     range_stats = (
         df.groupby("Threshold_Range")
-        .agg({"Host_Time_us": "mean", "Device_Time_us": "mean", "Speedup": "mean"})
+        .agg({"Host_Time_ms": "mean", "Device_Time_ms": "mean", "Speedup": "mean"})
         .reset_index()
     )
     # Time vs Threshold Range
     axes[0, 3].plot(
         range_stats["Threshold_Range"],
-        range_stats["Host_Time_us"],
+        range_stats["Host_Time_ms"],
         marker="o",
         label="Host",
         color="#FF6B6B",
     )
     axes[0, 3].plot(
         range_stats["Threshold_Range"],
-        range_stats["Device_Time_us"],
+        range_stats["Device_Time_ms"],
         marker="o",
         label="Device",
         color="#4ECDC4",
     )
     axes[0, 3].set_xlabel("Threshold Range (Tmax - Tmin)")
-    axes[0, 3].set_ylabel("Avg Time (μs)")
+    axes[0, 3].set_ylabel("Avg Time (ms)")
     axes[0, 3].set_title("Execution Time vs Threshold Range")
     axes[0, 3].legend()
     axes[0, 3].grid(True, alpha=0.3)
@@ -363,12 +363,12 @@ def plot_parameter_analysis(df, output_dir):
     axes[1, 3].legend()
     axes[1, 3].grid(True, alpha=0.3)
     # Normalized time vs Threshold Range
-    host_norm = (range_stats["Host_Time_us"] - range_stats["Host_Time_us"].min()) / (
-        range_stats["Host_Time_us"].max() - range_stats["Host_Time_us"].min()
+    host_norm = (range_stats["Host_Time_ms"] - range_stats["Host_Time_ms"].min()) / (
+        range_stats["Host_Time_ms"].max() - range_stats["Host_Time_ms"].min()
     )
     device_norm = (
-        range_stats["Device_Time_us"] - range_stats["Device_Time_us"].min()
-    ) / (range_stats["Device_Time_us"].max() - range_stats["Device_Time_us"].min())
+        range_stats["Device_Time_ms"] - range_stats["Device_Time_ms"].min()
+    ) / (range_stats["Device_Time_ms"].max() - range_stats["Device_Time_ms"].min())
     axes[2, 3].plot(
         range_stats["Threshold_Range"],
         host_norm,
@@ -450,14 +450,14 @@ def plot_detailed_heatmaps(df, output_dir):
 
     # --- DEVICE TIME HEATMAPS ---
     # Device Time: Sigma vs Tmin
-    device_pivot = df.groupby(["Sigma", "Tmin"])["Device_Time_us"].mean().unstack()
+    device_pivot = df.groupby(["Sigma", "Tmin"])["Device_Time_ms"].mean().unstack()
     sns.heatmap(
         device_pivot,
         annot=True,
         fmt=".0f",
         cmap="Blues",
         ax=axes[1, 0],
-        cbar_kws={"label": "Device Time (μs)"},
+        cbar_kws={"label": "Device Time (ms)"},
     )
     axes[1, 0].set_title("Device Time: Sigma vs Tmin")
     axes[1, 0].set_ylabel("Sigma")
@@ -465,14 +465,14 @@ def plot_detailed_heatmaps(df, output_dir):
     axes[1, 0].tick_params(axis="x", rotation=45)
 
     # Device Time: Sigma vs Tmax
-    device_pivot2 = df.groupby(["Sigma", "Tmax"])["Device_Time_us"].mean().unstack()
+    device_pivot2 = df.groupby(["Sigma", "Tmax"])["Device_Time_ms"].mean().unstack()
     sns.heatmap(
         device_pivot2,
         annot=True,
         fmt=".0f",
         cmap="Blues",
         ax=axes[1, 1],
-        cbar_kws={"label": "Device Time (μs)"},
+        cbar_kws={"label": "Device Time (ms)"},
     )
     axes[1, 1].set_title("Device Time: Sigma vs Tmax")
     axes[1, 1].set_ylabel("Sigma")
@@ -480,14 +480,14 @@ def plot_detailed_heatmaps(df, output_dir):
     axes[1, 1].tick_params(axis="x", rotation=45)
 
     # Device Time: Tmin vs Tmax
-    device_pivot3 = df.groupby(["Tmin", "Tmax"])["Device_Time_us"].mean().unstack()
+    device_pivot3 = df.groupby(["Tmin", "Tmax"])["Device_Time_ms"].mean().unstack()
     sns.heatmap(
         device_pivot3,
         annot=True,
         fmt=".0f",
         cmap="Blues",
         ax=axes[1, 2],
-        cbar_kws={"label": "Device Time (μs)"},
+        cbar_kws={"label": "Device Time (ms)"},
     )
     axes[1, 2].set_title("Device Time: Tmin vs Tmax")
     axes[1, 2].set_ylabel("Tmin")
@@ -496,14 +496,14 @@ def plot_detailed_heatmaps(df, output_dir):
 
     # --- HOST TIME HEATMAPS ---
     # Host Time: Sigma vs Tmin
-    host_pivot = df.groupby(["Sigma", "Tmin"])["Host_Time_us"].mean().unstack()
+    host_pivot = df.groupby(["Sigma", "Tmin"])["Host_Time_ms"].mean().unstack()
     sns.heatmap(
         host_pivot,
         annot=True,
         fmt=".0f",
         cmap="Reds",
         ax=axes[2, 0],
-        cbar_kws={"label": "Host Time (μs)"},
+        cbar_kws={"label": "Host Time (ms)"},
     )
     axes[2, 0].set_title("Host Time: Sigma vs Tmin")
     axes[2, 0].set_ylabel("Sigma")
@@ -511,14 +511,14 @@ def plot_detailed_heatmaps(df, output_dir):
     axes[2, 0].tick_params(axis="x", rotation=45)
 
     # Host Time: Sigma vs Tmax
-    host_pivot2 = df.groupby(["Sigma", "Tmax"])["Host_Time_us"].mean().unstack()
+    host_pivot2 = df.groupby(["Sigma", "Tmax"])["Host_Time_ms"].mean().unstack()
     sns.heatmap(
         host_pivot2,
         annot=True,
         fmt=".0f",
         cmap="Reds",
         ax=axes[2, 1],
-        cbar_kws={"label": "Host Time (μs)"},
+        cbar_kws={"label": "Host Time (ms)"},
     )
     axes[2, 1].set_title("Host Time: Sigma vs Tmax")
     axes[2, 1].set_ylabel("Sigma")
@@ -526,14 +526,14 @@ def plot_detailed_heatmaps(df, output_dir):
     axes[2, 1].tick_params(axis="x", rotation=45)
 
     # Host Time: Tmin vs Tmax
-    host_pivot3 = df.groupby(["Tmin", "Tmax"])["Host_Time_us"].mean().unstack()
+    host_pivot3 = df.groupby(["Tmin", "Tmax"])["Host_Time_ms"].mean().unstack()
     sns.heatmap(
         host_pivot3,
         annot=True,
         fmt=".0f",
         cmap="Reds",
         ax=axes[2, 2],
-        cbar_kws={"label": "Host Time (μs)"},
+        cbar_kws={"label": "Host Time (ms)"},
     )
     axes[2, 2].set_title("Host Time: Tmin vs Tmax")
     axes[2, 2].set_ylabel("Tmin")
@@ -559,8 +559,8 @@ def generate_summary_stats(df, output_dir):
             "Max Speedup": f"{df['Speedup'].max():.2f}x",
             "Min Speedup": f"{df['Speedup'].min():.2f}x",
             "Std Speedup": f"{df['Speedup'].std():.2f}x",
-            "Mean Host Time": f"{df['Host_Time_us'].mean():.2f} μs",
-            "Mean Device Time": f"{df['Device_Time_us'].mean():.2f} μs",
+            "Mean Host Time": f"{df['Host_Time_ms'].mean():.2f} ms",
+            "Mean Device Time": f"{df['Device_Time_ms'].mean():.2f} ms",
         }
     }
 
